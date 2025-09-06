@@ -37,7 +37,23 @@ const requestQueue = [];
 const maxRequestsPerSecond = 20;
 let lastRequestTime = 0;
 const requestInterval = 1000 / maxRequestsPerSecond;
-const globalProvider = new ethers.providers.WebSocketProvider(wsUrl);
+let globalProvider;
+async function initializeWebSocket() {
+  try {
+    globalProvider = new ethers.providers.WebSocketProvider(wsUrl);
+    globalProvider._websocket.on('close', () => {
+      console.warn('WebSocket closed');
+      setTimeout(initializeWebSocket, 5000);
+    });
+    globalProvider._websocket.on('error', (error) => {
+      console.error('WebSocket error:', error);
+    });
+  } catch (error) {
+    console.error('Error initializing WebSocket:', error);
+    setTimeout(initializeWebSocket, 5000);
+  }
+}
+initializeWebSocket();
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_12QonfxkXBZV@ep-rapid-mud-adi8zmh1-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require',
   ssl: { rejectUnauthorized: false }
@@ -306,11 +322,11 @@ async function startListener(walletAddress, monitorNfts, monitorCoins) {
       globalProvider.on(outgoing, (log) => processTokenOrNftTransfer(log, log.topics.length === 3 ? 'Token Sent' : 'NFT Sent', log.topics.length === 3, walletAddress));
     }
     globalProvider._websocket.on('close', () => {
-      console.warn(`WebSocket closed`);
+      console.warn('WebSocket closed');
       setTimeout(reconnect, 5000);
     });
     globalProvider._websocket.on('error', (error) => {
-      console.error('WebSocket error:`, error);
+      console.error('WebSocket error:', error);
     });
   }
   setupListeners();
