@@ -1,7 +1,7 @@
 {
-  "name": "monad-nft-backend",
+  "name": "monad-messages-backend",
   "version": "1.0.0",
-  "description": "Backend for Monad NFT monitoring",
+  "description": "Backend for Monad Messages monitoring",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
