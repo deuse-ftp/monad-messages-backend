@@ -310,7 +310,7 @@ async function startListener(walletAddress, monitorNfts, monitorCoins) {
       setTimeout(reconnect, 5000);
     });
     globalProvider._websocket.on('error', (error) => {
-      console.error(`WebSocket error:`, error);
+      console.error('WebSocket error:`, error);
     });
   }
   setupListeners();
@@ -382,10 +382,6 @@ app.post('/configure', async (req, res) => {
     console.error('Error in /configure route:', error.message);
     res.status(500).send('Server error: ' + error.message);
   }
-});
-app.get('/', (req, res) => {
-  console.log('Received GET /');
-  res.sendFile(__dirname + '/index.html');
 });
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`API running on port ${port}!`));
