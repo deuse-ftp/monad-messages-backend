@@ -4,7 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
 const app = express();
-app.use(cors({ origin: '*' })); // Ajuste para o domínio do Vercel após implantação
+app.use(cors({ origin: 'https://monad-messages-frontend.vercel.app' })); // Restrinja ao domínio do Vercel
 app.use(express.json());
 const wsUrl = 'wss://testnet-rpc.monad.xyz';
 const transferHash = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
@@ -46,10 +46,10 @@ async function initializeWebSocket() {
       setTimeout(initializeWebSocket, 5000);
     });
     globalProvider._websocket.on('error', (error) => {
-      console.error('WebSocket error:', error);
+      console.error('WebSocket error:', error.message, error.stack);
     });
   } catch (error) {
-    console.error('Error initializing WebSocket:', error);
+    console.error('Error initializing WebSocket:', error.message, error.stack);
     setTimeout(initializeWebSocket, 5000);
   }
 }
@@ -326,7 +326,7 @@ async function startListener(walletAddress, monitorNfts, monitorCoins) {
       setTimeout(reconnect, 5000);
     });
     globalProvider._websocket.on('error', (error) => {
-      console.error('WebSocket error:', error);
+      console.error('WebSocket error:', error.message, error.stack);
     });
   }
   setupListeners();
@@ -337,7 +337,16 @@ async function startListener(walletAddress, monitorNfts, monitorCoins) {
 async function loadWalletsFromDb() {
   try {
     const result = await pool.query('SELECT * FROM wallets');
+    console.log('Query result:', result.rows); // Log para depuração
+    if (!result.rows || result.rows.length === 0) {
+      console.log('No wallets found in database.');
+      return;
+    }
     result.rows.forEach(row => {
+      if (!row || !row.walletAddress) {
+        console.error('Invalid row data:', row);
+        return;
+      }
       const addr = row.walletAddress.toLowerCase();
       chatIdsByWallet[addr] = row.chatId;
       let monitorNfts = false;
@@ -354,7 +363,7 @@ async function loadWalletsFromDb() {
       console.log(`Loaded and started listener for wallet from DB: ${addr}`);
     });
   } catch (err) {
-    console.error('Error loading wallets from DB:', err.message);
+    console.error('Error loading wallets from DB:', err.message, err.stack);
   }
 }
 app.post('/configure', async (req, res) => {
