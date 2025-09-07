@@ -8,15 +8,14 @@ Telegram Bot: Manages chat ID generation and notifications.
 
 Prerequisites
 
-Node.js installed locally for testing.
-Accounts on:
+- Node.js installed locally for testing.
+
+- Accounts on:
 GitHub (for repositories).
 Telegram (BotFather for bot creation).
 Neon (PostgreSQL database).
 Render (backend hosting).
 Vercel (frontend hosting).
-
-
 A Monad testnet wallet for testing.
 
 Setup Steps
@@ -35,7 +34,9 @@ Update backend/index.js with the BOT_TOKEN in process.env.BOT_TOKEN.
 Sign up at https://neon.tech.
 Create a project and database (e.g., neondb).
 Copy the connection string (e.g., postgresql://neondb_owner:npg_12QonfxkXBZV@ep-rapid-mud-adi8zmh1-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require).
-In Neon console or psql, create the table:CREATE TABLE IF NOT EXISTS wallets (
+In Neon console or psql, create the table: 
+
+CREATE TABLE IF NOT EXISTS wallets (
   walletAddress TEXT PRIMARY KEY,
   monitorType TEXT NOT NULL,
   chatId TEXT NOT NULL
