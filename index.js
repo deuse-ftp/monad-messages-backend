@@ -4,7 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
 const app = express();
-app.use(cors({ origin: 'https://monad-messages-frontend.vercel.app' })); // Restrinja ao domínio do Vercel
+app.use(cors({ origin: 'https://monad-messages-frontend.vercel.app' }));
 app.use(express.json());
 const wsUrl = 'wss://testnet-rpc.monad.xyz';
 const transferHash = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
@@ -282,8 +282,15 @@ async function throttledProcessBlock(blockNumber, walletAddress) {
   }
 }
 async function monitorBlocks(walletAddress) {
-  let lastBlockNumber = await globalProvider.getBlockNumber();
-  console.log(`Starting block monitoring for wallet ${walletAddress} at block ${lastBlockNumber}`);
+  let lastBlockNumber;
+  try {
+    lastBlockNumber = await globalProvider.getBlockNumber();
+    console.log(`Starting block monitoring for wallet ${walletAddress} at block ${lastBlockNumber}`);
+  } catch (error) {
+    console.error(`Error getting initial block number for wallet ${walletAddress}:`, error.message, error.stack);
+    setTimeout(() => monitorBlocks(walletAddress), 5000);
+    return;
+  }
   async function processNextBlock() {
     try {
       const currentBlock = await globalProvider.getBlockNumber();
@@ -294,7 +301,7 @@ async function monitorBlocks(walletAddress) {
         lastBlockNumber = currentBlock;
       }
     } catch (error) {
-      console.error(`Error monitoring blocks for wallet ${walletAddress}:`, error.reason || error.message);
+      console.error(`Error monitoring blocks for wallet ${walletAddress}:`, error.message, error.stack);
     }
     setTimeout(processNextBlock, 1000);
   }
@@ -337,26 +344,26 @@ async function startListener(walletAddress, monitorNfts, monitorCoins) {
 async function loadWalletsFromDb() {
   try {
     const result = await pool.query('SELECT * FROM wallets');
-    console.log('Query result:', result.rows); // Log para depuração
+    console.log('Query result:', result.rows);
     if (!result.rows || result.rows.length === 0) {
       console.log('No wallets found in database.');
       return;
     }
     result.rows.forEach(row => {
-      if (!row || !row.walletAddress) {
+      if (!row || !row.walletaddress) {
         console.error('Invalid row data:', row);
         return;
       }
-      const addr = row.walletAddress.toLowerCase();
-      chatIdsByWallet[addr] = row.chatId;
+      const addr = row.walletaddress.toLowerCase();
+      chatIdsByWallet[addr] = row.chatid;
       let monitorNfts = false;
       let monitorCoins = false;
-      if (row.monitorType === 'both') {
+      if (row.monitortype === 'both') {
         monitorNfts = true;
         monitorCoins = true;
-      } else if (row.monitorType === 'nfts') {
+      } else if (row.monitortype === 'nfts') {
         monitorNfts = true;
-      } else if (row.monitorType === 'coins') {
+      } else if (row.monitortype === 'coins') {
         monitorCoins = true;
       }
       startListener(addr, monitorNfts, monitorCoins);
