@@ -97,5 +97,3 @@ Free Plan: Render suspends after 15 minutes of inactivity; use cron job or upgra
 Security: Set BOT_TOKEN and DATABASE_URL as environment variables. Restrict CORS to frontend URL.
 Dependencies: Ensure package.json includes pg for Neon.
 Troubleshooting: Check logs in Render, Neon, and Vercel. Test Neon with psql.
-
-For issues, open a ticket on GitHub.
